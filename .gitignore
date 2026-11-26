@@ -1,0 +1,12 @@
+# Frame render (dibuat ulang oleh capture.mjs, jangan di-commit)
+frames/
+*.tmp.png
+
+# Dependensi npm (di-install ulang oleh workflow)
+node_modules/
+
+# Hasil render (diunggah sebagai artifact Actions, jangan di-commit)
+*.mp4
+
+# Folder temp lokal
+.tmp/
