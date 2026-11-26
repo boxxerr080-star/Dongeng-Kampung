@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Katak Penjaga Padi — Kartun 3D</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/node_modules/three/build/three.module.js"
+    }
+  }
+  </script>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #caption {
+      position: fixed; left: 0; right: 0; bottom: 11%;
+      text-align: center; pointer-events: none;
+      color: #fff;
+      font: 800 44px/1.15 system-ui, "Arial", sans-serif;
+      letter-spacing: 0.04em;
+      text-shadow: 0 3px 0 rgba(0,0,0,.85), 0 -2px 0 rgba(0,0,0,.85), 2px 0 0 rgba(0,0,0,.85), -2px 0 0 rgba(0,0,0,.85), 0 0 16px rgba(0,0,0,.6);
+      padding: 0 40px;
+    }
+  </style>
+</head>
+<body>
+  <div id="caption"></div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { buildScene } from './scene.js';
+
+    // Caption dari teks naskah (bukan dari whisper). Waktu = detik video, voiceover mulai t=1.0
+    const CAPTIONS = [
+      [1.00, 'PENJAGA SAWAH'],
+      [4.06, 'ATURAN SAWAH'],
+      [14.34, 'JANGAN DIUSIR'],
+      [23.02, 'WERENG MELEDAK'],
+      [32.98, 'TETAP HIJAU'],
+      [41.68, 'RATUSAN SERANGGA'],
+      [54.44, 'YANG MENJAGA'],
+    ];
+    const capEl = document.getElementById('caption');
+    function updateCaption(t) {
+      let cur = '';
+      for (const [start, text] of CAPTIONS) {
+        if (t >= start) cur = text; else break;
+      }
+      capEl.textContent = cur;
+    }
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.body.appendChild(renderer.domElement);
+
+    const app = buildScene(THREE, renderer);
+    app.resize(window.innerWidth, window.innerHeight);
+
+    window.renderAt = (t) => { app.renderAt(t); updateCaption(t); };
+    window.__ready = true;
+    app.renderAt(0);
+    updateCaption(0);
+  </script>
+</body>
+</html>
