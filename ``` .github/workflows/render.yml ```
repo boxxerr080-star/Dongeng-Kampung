@@ -1,95 +1,93 @@
-```yaml
-Render Katak Penjaga Padi di GitHub Actions
+# Render Katak Penjaga Padi di GitHub Actions
 #
-Video cerita 60 detik (576x1024, 30fps) — three.js + Playwright headless,
-WebGL software (SwiftShader, tanpa GPU). Dijalankan otomatis setiap push
-ke main (dan bisa dipicu manual dari tab Actions / workflow_dispatch).
+# Video cerita 60 detik (576x1024, 30fps) — three.js + Playwright headless,
+# WebGL software (SwiftShader, tanpa GPU). Dijalankan otomatis setiap push
+# ke main (dan bisa dipicu manual dari tab Actions / workflow_dispatch).
 #
-Alur: checkout -> Node.js -> npm ci -> Playwright Chromium -> gabung
-voiceover (disimpan sebagai base64 dalam 6 bagian @110 KB, karena konektor
-GitHub hanya bisa mengunggah file teks dan ada batas ukuran argumen)
--> capture.mjs (render 1800 frame PNG, resumable)
--> ffmpeg mux voiceover -> upload MP4 sebagai artifact + GitHub Release.
+# Alur: checkout -> Node.js -> npm ci -> Playwright Chromium -> gabung
+# voiceover (disimpan sebagai base64 dalam 6 bagian @110 KB, karena konektor
+# GitHub hanya bisa mengunggah file teks dan ada batas ukuran argumen)
+# -> capture.mjs (render 1800 frame PNG, resumable)
+# -> ffmpeg mux voiceover -> upload MP4 sebagai artifact + GitHub Release.
 #
-Perkiraan durasi di runner gratis (2 CPU, SwiftShader): 40-80 menit.
-Timeout aman: 300 menit.
+# Perkiraan durasi di runner gratis (2 CPU, SwiftShader): 40-80 menit.
+# Timeout aman: 300 menit.
 
 name: Render Katak Penjaga Padi
 
 on:
- push:
- branches: [main]
- workflow_dispatch:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
- contents: write
+  contents: write
 
 jobs:
- render:
- runs-on: ubuntu-latest
- timeout-minutes: 300
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
 
- steps:
- - name: Checkout
- uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
- - name: Setup Node.js 22
- uses: actions/setup-node@v4
- with:
- node-version: '22'
- cache: npm
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
 
- - name: Install dependencies
- run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
- - name: Install Playwright Chromium
- run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
- - name: Pastikan ffmpeg tersedia
- run: which ffmpeg || sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Pastikan ffmpeg tersedia
+        run: which ffmpeg || sudo apt-get update && sudo apt-get install -y ffmpeg
 
- - name: Gabungkan dan decode voiceover dari base64
- run: |
- cat voice/voiceover-katak.mp3.b64.part* > voice/voiceover-katak.mp3.b64
- base64 -d voice/voiceover-katak.mp3.b64 > voice/voiceover-katak.mp3
- ffprobe -v error -show_entries format=duration -of csv=p=0 voice/voiceover-katak.mp3
+      - name: Gabungkan dan decode voiceover dari base64
+        run: |
+          cat voice/voiceover-katak.mp3.b64.part* > voice/voiceover-katak.mp3.b64
+          base64 -d voice/voiceover-katak.mp3.b64 > voice/voiceover-katak.mp3
+          ffprobe -v error -show_entries format=duration -of csv=p=0 voice/voiceover-katak.mp3
 
- - name: Render 1800 frame + encode MP4
- env:
- TMPDIR: ${{ github.workspace }}/.tmp
- # CHROME_PATH sengaja TIDAK di-set: capture.mjs memakai chromium
- # Playwright kalau path headless-shell lokal tidak ditemukan.
- run: |
- mkdir -p "$TMPDIR"
- node capture.mjs
- ls -la katak-penjaga-padi.mp4
+      - name: Render 1800 frame + encode MP4
+        env:
+          TMPDIR: ${{ github.workspace }}/.tmp
+          # CHROME_PATH sengaja TIDAK di-set: capture.mjs memakai chromium
+          # Playwright kalau path headless-shell lokal tidak ditemukan.
+        run: |
+          mkdir -p "$TMPDIR"
+          node capture.mjs
+          ls -la katak-penjaga-padi.mp4
 
- - name: Verifikasi MP4
- run: |
- ffprobe -v error \
- -select_streams v:0 \
- -show_entries stream=width,height,r_frame_rate,nb_frames,codec_name \
- -show_entries format=duration \
- -of default=noprint_wrappers=1 katak-penjaga-padi.mp4
- ffprobe -v error \
- -select_streams a:0 \
- -show_entries stream=codec_name \
- -of default=noprint_wrappers=1 katak-penjaga-padi.mp4
+      - name: Verifikasi MP4
+        run: |
+          ffprobe -v error \
+            -select_streams v:0 \
+            -show_entries stream=width,height,r_frame_rate,nb_frames,codec_name \
+            -show_entries format=duration \
+            -of default=noprint_wrappers=1 katak-penjaga-padi.mp4
+          ffprobe -v error \
+            -select_streams a:0 \
+            -show_entries stream=codec_name \
+            -of default=noprint_wrappers=1 katak-penjaga-padi.mp4
 
- - name: Upload MP4 sebagai artifact
- uses: actions/upload-artifact@v4
- with:
- name: katak-penjaga-padi
- path: katak-penjaga-padi.mp4
- retention-days: 14
- if-no-files-found: error
+      - name: Upload MP4 sebagai artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: katak-penjaga-padi
+          path: katak-penjaga-padi.mp4
+          retention-days: 14
+          if-no-files-found: error
 
- - name: Buat GitHub Release berisi MP4
- env:
- GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
- run: |
- gh release create "render-${{ github.run_number }}" \
- --title "Katak Penjaga Padi — render #${{ github.run_number }}" \
- --notes "Video 60 detik (576x1024, 30fps) hasil render GitHub Actions. Naskah: Konon, Katak Bisa Menjadi Penjaga Padi!" \
- katak-penjaga-padi.mp4
-```
+      - name: Buat GitHub Release berisi MP4
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "render-${{ github.run_number }}" \
+            --title "Katak Penjaga Padi — render #${{ github.run_number }}" \
+            --notes "Video 60 detik (576x1024, 30fps) hasil render GitHub Actions. Naskah: Konon, Katak Bisa Menjadi Penjaga Padi!" \
+            katak-penjaga-padi.mp4
