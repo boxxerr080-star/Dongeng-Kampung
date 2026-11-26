@@ -1,4 +1,4 @@
-// Previs stills per beat untuk Katak Penjaga Padi.
+// Previs stills per beat untuk Daun Kompos.
 // Pakai: node previs.mjs  (tulis ke previs/beatN_tX.png)
 import { chromium } from 'playwright';
 import path from 'node:path';
@@ -8,7 +8,8 @@ import { startServer } from './server.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const TIMES = [
-  [1, 2.0], [2, 9.0], [3, 18.0], [4, 27.0], [5, 37.0], [6, 47.0], [7, 57.0],
+  [1, 2.0], [1, 4.2], [2, 5.5], [2, 8.0], [2, 10.5], [3, 13.0], [3, 17.0],
+  [4, 28.0], [4, 32.5], [5, 34.2], [5, 35.5], [6, 44.0], [7, 57.0], [7, 59.5],
 ];
 const CHROME_PATH = process.env.CHROME_PATH || '/home/hatch/.cache/ms-playwright/chromium_headless_shell-1148/chrome-linux/headless_shell';
 const PORT = Number(process.env.PORT || 8133);
