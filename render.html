@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
-  <title>Katak Penjaga Padi — Kartun 3D</title>
+  <title>Daun Kompos — Kartun 3D</title>
   <script type="importmap">
   {
     "imports": {
@@ -16,31 +16,40 @@
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
     canvas { display: block; width: 100%; height: 100%; }
     #caption {
-      position: fixed; left: 0; right: 0; bottom: 11%;
+      position: fixed; left: 0; right: 0; bottom: 22%;
       text-align: center; pointer-events: none;
       color: #fff;
-      font: 800 44px/1.15 system-ui, "Arial", sans-serif;
+      font: 800 60px/1.15 system-ui, "Arial", sans-serif;
       letter-spacing: 0.04em;
-      text-shadow: 0 3px 0 rgba(0,0,0,.85), 0 -2px 0 rgba(0,0,0,.85), 2px 0 0 rgba(0,0,0,.85), -2px 0 0 rgba(0,0,0,.85), 0 0 16px rgba(0,0,0,.6);
+      text-shadow: 0 4px 0 rgba(0,0,0,.9), 0 -3px 0 rgba(0,0,0,.9), 3px 0 0 rgba(0,0,0,.9), -3px 0 0 rgba(0,0,0,.9), 2px 2px 0 rgba(0,0,0,.9), -2px -2px 0 rgba(0,0,0,.9), 0 0 18px rgba(0,0,0,.6);
       padding: 0 40px;
+    }
+    #subtitle {
+      position: fixed; left: 0; right: 0; bottom: 4.5%;
+      text-align: center; pointer-events: none;
+      color: #fff;
+      font: 700 28px/1.3 system-ui, "Arial", sans-serif;
+      text-shadow: 0 3px 0 rgba(0,0,0,.9), 0 -2px 0 rgba(0,0,0,.9), 2px 0 0 rgba(0,0,0,.9), -2px 0 0 rgba(0,0,0,.9), 1px 1px 0 rgba(0,0,0,.9), -1px -1px 0 rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.6);
+      padding: 0 30px;
     }
   </style>
 </head>
 <body>
   <div id="caption"></div>
+  <div id="subtitle"></div>
   <script type="module">
     import * as THREE from 'three';
     import { buildScene } from './scene.js';
 
     // Caption dari teks naskah (bukan dari whisper). Waktu = detik video, voiceover mulai t=1.0
     const CAPTIONS = [
-      [1.00, 'PENJAGA SAWAH'],
-      [4.06, 'ATURAN SAWAH'],
-      [14.34, 'JANGAN DIUSIR'],
-      [23.02, 'WERENG MELEDAK'],
-      [32.98, 'TETAP HIJAU'],
-      [41.68, 'RATUSAN SERANGGA'],
-      [54.44, 'YANG MENJAGA'],
+      [1.00, 'TIDAK DIBUANG'],
+      [4.50, 'DAUN MENUMPUK'],
+      [11.88, 'JANGAN DIBAKAR'],
+      [22.38, 'ASAP MENGEPUL'],
+      [33.66, 'TETAP SUBUR'],
+      [37.04, 'JADI KOMPOS'],
+      [50.76, 'YANG MENYUBURKAN'],
     ];
     const capEl = document.getElementById('caption');
     function updateCaption(t) {
@@ -49,6 +58,55 @@
         if (t >= start) cur = text; else break;
       }
       capEl.textContent = cur;
+    }
+
+    // Subtitle narasi lengkap dari teks naskah (bukan hasil mentah whisper);
+    // timing kata dari work/words.json (voiceover mulai t=1.0). [start, end, teks]
+    const SUBTITLES = [
+      [1.00, 2.91, 'Konon, sampah di kampung ini'],
+      [2.96, 4.08, 'tidak pernah dibuang.'],
+      [4.50, 6.05, 'Setiap pagi, warga menyapu'],
+      [6.10, 7.39, 'daun-daun kering yang jatuh'],
+      [7.44, 8.10, 'semalaman.'],
+      [8.52, 9.81, 'Daunnya menumpuk di pinggir'],
+      [9.86, 11.48, 'jalan, tinggi dan kering.'],
+      [11.88, 13.99, 'Raka menggerutu, buat apa disapu'],
+      [14.04, 15.15, 'kalau ujung-ujungnya dibakar saja.'],
+      [15.20, 17.33, 'Tapi Pak Sastro hanya tersenyum.'],
+      [17.38, 19.30, 'Jangan dibakar, katanya.'],
+      [19.56, 21.90, 'Daun kering itu bukan sampah.'],
+      [22.38, 23.62, 'Raka tidak percaya.'],
+      [23.86, 25.54, 'Daun kering, katanya,'],
+      [25.76, 27.09, 'cuma bikin halaman kotor.'],
+      [27.14, 28.52, 'Seminggu kemudian,'],
+      [28.64, 29.85, 'tumpukan daun itu dibakar'],
+      [29.90, 31.91, 'tetangga — asapnya mengepul ke'],
+      [31.96, 33.46, 'mana-mana, mata perih.'],
+      [33.66, 35.61, 'Anehnya, kebun Pak Sastro tetap'],
+      [35.66, 36.82, 'hijau dan subur.'],
+      [37.04, 38.85, 'Ternyata, daun kering itu kaya'],
+      [38.90, 39.34, 'karbon.'],
+      [39.76, 41.12, 'Dicampur sisa sayur,'],
+      [41.28, 42.85, 'disiram air, dan dibiarkan'],
+      [42.90, 44.55, 'berbulan-bulan, daun itu berubah'],
+      [44.60, 45.90, 'jadi kompos.'],
+      [46.20, 46.75, 'Tiga sampai enam bulan,'],
+      [46.80, 49.17, 'tumpukan itu jadi pupuk hitam'],
+      [49.22, 50.38, 'yang menyuburkan tanah.'],
+      [50.76, 51.87, 'Daun kering yang dianggap'],
+      [51.92, 54.09, 'sampah, ternyata makanan bagi'],
+      [54.14, 55.14, 'tanah.'],
+      [55.24, 56.79, 'Kadang, yang dibuang justru yang'],
+      [56.84, 57.18, 'menyuburkan.'],
+    ];
+    const subEl = document.getElementById('subtitle');
+    function updateSubtitle(t) {
+      let cur = '';
+      for (const [start, end, text] of SUBTITLES) {
+        if (t >= start && t <= end) { cur = text; break; }
+        if (t < start) break;
+      }
+      subEl.textContent = cur;
     }
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -62,10 +120,11 @@
     const app = buildScene(THREE, renderer);
     app.resize(window.innerWidth, window.innerHeight);
 
-    window.renderAt = (t) => { app.renderAt(t); updateCaption(t); };
+    window.renderAt = (t) => { app.renderAt(t); updateCaption(t); updateSubtitle(t); };
     window.__ready = true;
     app.renderAt(0);
     updateCaption(0);
+    updateSubtitle(0);
   </script>
 </body>
 </html>
